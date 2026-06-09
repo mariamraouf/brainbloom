@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#e9c6d4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Bloom — your reflection journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#ffc1e0; --rose:#ff8fc7; --mauve:#c9a7ff; --plum:#a85fd0;
+    --ink:#5b3a64; --ink2:#8a6b92; --ink3:#bda0cc;
+    --cream:#fff6fb; --card:#fffafd; --line:#ffe2f1; --line2:#f6cfe6;
+    --sage:#8fe3c8; --gold:#ffcf6b; --periwinkle:#a8d8ff;
+    --accent:#ff6fb5;
+    --shadow:0 10px 30px rgba(201,107,168,.16);
+    --shadow-sm:0 4px 14px rgba(201,107,168,.13);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Quicksand',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 12% -5%, #ffe3f3 0%, transparent 40%),
+      radial-gradient(circle at 95% 8%, #ecdcff 0%, transparent 38%),
+      radial-gradient(circle at 50% 105%, #d8f2ff 0%, transparent 44%),
+      var(--cream);
+    background-attachment:fixed; min-height:100vh; overflow-x:hidden; line-height:1.5;
+  }
+  .serif{font-family:'Fredoka','Baloo 2',cursive;}
+  .app{max-width:540px;margin:0 auto;padding:22px 18px 120px;}
+
+  /* header */
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{width:34px;height:34px;}
+  .brand .name{font-family:'Baloo 2';font-weight:800;font-size:26px;letter-spacing:.3px;
+    background:linear-gradient(120deg,#ff5fb0,#c9a7ff,#7fd8ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .greet{font-size:12.5px;color:var(--ink3);font-weight:600;}
+
+  .card{background:var(--card);border:2.5px solid var(--line2);border-radius:30px;padding:22px;
+    box-shadow:5px 6px 0 #ffd9ec;margin-bottom:18px;}
+  .card h2{font-family:'Baloo 2',cursive;font-weight:800;font-size:23px;margin:0 0 3px;color:var(--plum);letter-spacing:.3px;}
+  .sub{font-size:13.5px;color:var(--ink3);margin:0 0 16px;font-weight:600;}
+
+  .view{display:none;}
+  .view.active{display:block;animation:rise .5s cubic-bezier(.2,.8,.25,1);}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+  /* mood grid */
+  .moods{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;}
+  .mood{border:2.5px solid var(--line2);border-radius:20px;padding:9px 4px 8px;background:var(--cream);
+    text-align:center;cursor:pointer;transition:transform .14s,box-shadow .2s,border-color .2s,background .2s;}
+  .mood:active{transform:scale(.9);}
+  .mood svg{width:40px;height:40px;display:block;margin:0 auto;}
+  .mood .lbl{font-family:'Baloo 2';font-size:11px;font-weight:700;margin-top:4px;color:var(--ink2);letter-spacing:.2px;}
+  .mood.sel{border-color:var(--rose);background:#fff;box-shadow:3px 4px 0 var(--rose);transform:translateY(-3px) rotate(-3deg);}
+
+  /* intensity */
+  .field{margin-top:18px;}
+  label.fl{display:block;font-size:12.5px;font-weight:700;margin-bottom:9px;color:var(--ink2);
+    text-transform:uppercase;letter-spacing:1.2px;}
+  input[type=range]{-webkit-appearance:none;width:100%;height:7px;border-radius:8px;
+    background:linear-gradient(90deg,var(--blush),var(--rose),var(--plum));outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+    background:#fff;border:3px solid var(--rose);box-shadow:var(--shadow-sm);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;
+    border:3px solid var(--rose);cursor:pointer;}
+  .intlabels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px;}
+
+  /* factor chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:2.5px solid var(--line2);background:var(--cream);border-radius:20px;padding:8px 15px;
+    font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px;}
+  .chip:active{transform:scale(.93);}
+  .chip.sel{background:linear-gradient(120deg,var(--rose),var(--mauve));color:#fff;border-color:#fff;box-shadow:0 3px 0 #d96bb5;}
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.5;}
+
+  textarea{width:100%;border:1px solid var(--line2);border-radius:16px;padding:13px 15px;font-family:inherit;
+    font-size:15px;color:var(--ink);background:var(--cream);resize:none;line-height:1.55;}
+  textarea:focus{outline:none;border-color:var(--rose);background:#fff;box-shadow:0 0 0 3px var(--line2);}
+
+  .btn{border:2.5px solid #fff;border-radius:22px;padding:16px;font-family:'Baloo 2';font-weight:800;font-size:17px;
+    color:#fff;background:linear-gradient(120deg,var(--rose),var(--mauve));box-shadow:0 5px 0 #d96bb5;cursor:pointer;
+    width:100%;margin-top:18px;letter-spacing:.4px;transition:transform .12s,box-shadow .12s;}
+  .btn:active{transform:translateY(4px);box-shadow:0 1px 0 #d96bb5;}
+  .btn.mini{width:auto;padding:11px 18px;font-size:14px;margin:0;}
+  .btn.ghost{background:#fff;color:var(--plum);border:1.5px solid var(--line2);box-shadow:none;}
+
+  /* Iris companion */
+  .iris{background:linear-gradient(135deg,#ffe9f6,#f0e6ff);border:2.5px solid var(--line2);border-radius:28px;
+    padding:20px;margin-bottom:18px;box-shadow:5px 6px 0 #f3d7ee;position:relative;overflow:hidden;}
+  .iris .ihead{display:flex;align-items:center;gap:11px;margin-bottom:11px;}
+  .iris .avatar{width:40px;height:40px;flex-shrink:0;}
+  .iris .iname{font-family:'Baloo 2';font-weight:600;font-size:16px;color:var(--plum);}
+  .iris .irole{font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
+  .iris .imsg{font-family:'Baloo 2';font-size:16.5px;line-height:1.6;color:var(--ink);font-weight:400;}
+  .iris .imsg b{font-weight:600;color:var(--plum);}
+  .iris.empty-state .imsg{color:var(--ink2);}
+  .iris .iprompt{margin-top:13px;padding-top:13px;border-top:1px dashed var(--line2);font-size:13.5px;
+    color:var(--ink2);font-weight:600;font-style:italic;}
+  .fade-in{animation:fadeUp .6s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  /* week strip */
+  .week{display:flex;gap:6px;}
+  .wd{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .wd .dl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;}
+  .wd .dot{width:100%;aspect-ratio:1;border-radius:13px;background:var(--cream);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;}
+  .wd .dot svg{width:62%;height:62%;}
+  .wd .dot.empty::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--line2);}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px;}
+  .stat{background:#fff;border:2.5px solid var(--line2);border-radius:22px;padding:16px 8px;text-align:center;box-shadow:4px 5px 0 #ffd9ec;}
+  .stat:nth-child(1){background:linear-gradient(160deg,#fff,#ffe3f1);box-shadow:4px 5px 0 #ffc6e3;}
+  .stat:nth-child(2){background:linear-gradient(160deg,#fff,#eee2ff);box-shadow:4px 5px 0 #ddc9ff;}
+  .stat:nth-child(3){background:linear-gradient(160deg,#fff,#dff5ff);box-shadow:4px 5px 0 #c2ebff;}
+  .stat .n{font-family:'Baloo 2';font-weight:600;font-size:27px;color:var(--plum);line-height:1;}
+  .stat .t{font-size:11px;font-weight:700;color:var(--ink3);margin-top:5px;text-transform:uppercase;letter-spacing:.6px;}
+
+  /* sparkline */
+  .spark-wrap{margin-top:4px;}
+  .spark-wrap svg{width:100%;height:90px;display:block;}
+
+  /* bars */
+  .bar-row{display:flex;align-items:center;gap:11px;margin:11px 0;}
+  .bar-row .bf{width:30px;height:30px;flex-shrink:0;}
+  .bar-row .bf svg{width:100%;height:100%;}
+  .bar-track{flex:1;background:var(--cream);border-radius:10px;height:13px;overflow:hidden;border:1px solid var(--line);}
+  .bar-fill{height:100%;border-radius:10px;transition:width .7s cubic-bezier(.2,.8,.25,1);}
+  .bar-pct{font-size:12px;font-weight:700;color:var(--ink2);width:38px;text-align:right;}
+  .bar-lbl{font-size:13px;font-weight:700;color:var(--ink2);flex:1;}
+
+  /* items */
+  .item{display:flex;align-items:flex-start;gap:13px;padding:14px 0;border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:none;}
+  .item .ic{flex-shrink:0;margin-top:1px;}
+  .item .ic svg{width:30px;height:30px;display:block;}
+  .item .body{flex:1;min-width:0;}
+  .item .it-title{font-weight:700;font-size:14.5px;color:var(--ink);word-break:break-word;}
+  .item .it-note{font-size:13.5px;color:var(--ink2);margin-top:3px;font-weight:500;line-height:1.5;}
+  .item .it-meta{font-size:11.5px;color:var(--ink3);margin-top:4px;font-weight:600;}
+  .item .tagline{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;}
+  .minitag{font-size:10.5px;font-weight:700;color:var(--plum);background:var(--cream);border:1px solid var(--line2);
+    border-radius:10px;padding:2px 8px;}
+  .item.done .it-title{text-decoration:line-through;opacity:.5;}
+  .x{cursor:pointer;color:var(--ink3);padding:3px;border-radius:9px;flex-shrink:0;}
+  .x:active{background:var(--line2);}
+  .x svg{width:16px;height:16px;display:block;}
+
+  /* goals */
+  .gprog{display:flex;align-items:center;gap:9px;margin-top:9px;}
+  .gtrack{flex:1;height:9px;background:var(--cream);border-radius:8px;overflow:hidden;border:1px solid var(--line);}
+  .gfill{height:100%;background:linear-gradient(90deg,var(--blush),var(--plum));border-radius:8px;transition:width .5s;}
+  .gbtns{display:flex;gap:6px;}
+  .step{border:1px solid var(--line2);background:#fff;border-radius:10px;width:30px;height:30px;font-weight:700;
+    color:var(--plum);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .step:active{background:var(--line2);}
+
+  .addrow{display:flex;gap:9px;margin-top:6px;}
+  .addrow input{flex:1;border:1px solid var(--line2);border-radius:14px;padding:12px 14px;font-family:inherit;
+    font-size:14.5px;color:var(--ink);background:var(--cream);}
+  .addrow input:focus{outline:none;border-color:var(--rose);background:#fff;}
+
+  .empty{text-align:center;color:var(--ink3);font-weight:600;padding:22px 8px;font-size:14px;line-height:1.6;}
+  .empty svg{width:42px;height:42px;opacity:.55;margin-bottom:8px;}
+
+  .insight{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);}
+  .insight:last-child{border-bottom:none;}
+  .insight .idot{width:9px;height:9px;border-radius:50%;background:var(--rose);margin-top:6px;flex-shrink:0;}
+  .insight .itxt{font-size:14px;color:var(--ink);font-weight:600;line-height:1.55;}
+  .insight .itxt b{color:var(--plum);}
+
+  /* nav */
+  nav{position:fixed;bottom:0;left:0;right:0;z-index:50;}
+  .navwrap{max-width:540px;margin:0 auto;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+    border-top:2.5px solid var(--line2);display:flex;justify-content:space-around;padding:9px 6px 16px;}
+  .nav-btn{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:7px 4px;cursor:pointer;color:var(--ink3);font-family:'Baloo 2';font-weight:700;font-size:10.5px;letter-spacing:.3px;
+    border-radius:16px;transition:.18s;}
+  .nav-btn svg{width:23px;height:23px;transition:transform .2s;stroke:currentColor;}
+  .nav-btn.active{color:#fff;background:linear-gradient(135deg,var(--rose),var(--mauve));box-shadow:0 4px 0 #d96bb5;}
+  .nav-btn.active svg{transform:translateY(-1px) scale(1.12);}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(16px);
+    background:var(--ink);color:#fff;padding:12px 22px;border-radius:18px;font-weight:700;font-size:14px;
+    box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;z-index:99;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .petal{position:fixed;top:-20px;z-index:200;pointer-events:none;}
+  @keyframes drift{to{transform:translateY(108vh) rotate(360deg);opacity:0;}}
+
+  /* suggestions / flags */
+  .flag{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border-radius:14px;margin-bottom:9px;
+    background:#fcf0ee;border:1px solid #f0d4cf;}
+  .flag .fi{flex-shrink:0;margin-top:1px;}
+  .flag .fi svg{width:20px;height:20px;display:block;}
+  .flag .ft{font-size:13.5px;color:#a05a52;font-weight:600;line-height:1.5;}
+  .flag.calm{background:#eef5f0;border-color:#d5e6dc;}
+  .flag.calm .ft{color:#5c8068;}
+  .todo{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .todo:last-child{border-bottom:none;}
+  .todo .box{width:21px;height:21px;border-radius:7px;border:2px solid var(--line2);flex-shrink:0;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .todo .box svg{width:13px;height:13px;opacity:0;}
+  .todo.checked .box{background:var(--sage);border-color:var(--sage);}
+  .todo.checked .box svg{opacity:1;}
+  .todo .tt{font-size:14px;font-weight:600;color:var(--ink);line-height:1.5;}
+  .todo.checked .tt{text-decoration:line-through;color:var(--ink3);}
+
+  /* month calendar */
+  .mcal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px;}
+  .mcal-head span{text-align:center;font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;}
+  .mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .mc{aspect-ratio:1;border-radius:11px;background:var(--cream);border:1px solid var(--line);position:relative;
+    display:flex;align-items:center;justify-content:center;}
+  .mc.blank{background:transparent;border:none;}
+  .mc .num{font-size:10px;font-weight:700;color:var(--ink3);position:absolute;top:3px;left:5px;}
+  .mc.has .num{color:rgba(255,255,255,.95);}
+  .mc.today{box-shadow:0 0 0 2px var(--accent);}
+  .mc svg{width:60%;height:60%;}
+  .mlegend{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;}
+  .mlegend .lg{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--ink2);}
+  .mlegend .sw{width:13px;height:13px;border-radius:5px;}
+  .monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .monthnav button{background:#fff;border:1px solid var(--line2);border-radius:12px;width:36px;height:36px;
+    cursor:pointer;color:var(--plum);display:flex;align-items:center;justify-content:center;}
+  .monthnav button svg{width:18px;height:18px;}
+  .monthnav .mtitle{font-family:'Baloo 2';font-weight:600;font-size:20px;color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" fill="none">
+        <g stroke="#e85fb0" stroke-width="2.2" stroke-linecap="round">
+          <path d="M20 22c0-6-4-10-4-14 0-3 2-5 4-5s4 2 4 5c0 4-4 8-4 14z"/>
+          <path d="M20 22c4-4 9-5 12-3 2.4 1.6 2.6 4.4 1 6.4-2.2 2.8-8 1.6-13-3.4z"/>
+          <path d="M20 22c-4-4-9-5-12-3-2.4 1.6-2.6 4.4-1 6.4 2.2 2.8 8 1.6 13-3.4z"/>
+        </g>
+        <circle cx="20" cy="22" r="2.6" fill="#ffc94d"/>
+        <path d="M20 24v13" stroke="#6fd6b0" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <span class="name serif">Bloom</span>
+    </div>
+    <div class="greet" id="greet">—</div>
+  </header>
+
+  <!-- TODAY -->
+  <section class="view active" id="view-today">
+    <div class="iris" id="irisCard">
+      <div class="ihead">
+        <span class="avatar" id="irisAvatar"></span>
+        <div>
+          <div class="iname serif">Polly</div>
+          <div class="irole">the voice of you</div>
+        </div>
+      </div>
+      <div class="imsg" id="irisMsg"></div>
+      <div class="iprompt" id="irisPrompt" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>How are we, Mariam?</h2>
+      <p class="sub">Choose what's closest to how you feel right now</p>
+      <div class="moods" id="moodGrid"></div>
+
+      <div class="field" id="intField" style="display:none">
+        <label class="fl">How strongly?</label>
+        <input type="range" id="intensity" min="1" max="5" value="3">
+        <div class="intlabels"><span>barely</span><span>somewhat</span><span>very much</span></div>
+      </div>
+
+      <div class="field">
+        <label class="fl">What's shaping today?</label>
+        <div class="chips" id="factorChips"></div>
+      </div>
+
+      <div class="field">
+        <label class="fl">Tell me about it</label>
+        <textarea id="note" rows="3" placeholder="Whatever's on our mind — let's get it out."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="fl">One good thing today</label>
+        <textarea id="grateful" rows="2" placeholder="Something small counts too."></textarea>
+      </div>
+
+      <button class="btn" id="save">Save &amp; reflect</button>
+    </div>
+
+    <div class="card" id="attnCard">
+      <h2>What needs your attention</h2>
+      <p class="sub">The stuff we keep an eye on, so we don't have to hold it all alone</p>
+      <div id="flags"></div>
+      <div id="todos" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Your week</h2>
+      <p class="sub">A glance at the last seven days</p>
+      <div class="week" id="week"></div>
+    </div>
+
+    <div class="card">
+      <h2>Recent entries</h2>
+      <p class="sub">Your story, in your own words</p>
+      <div id="recent"></div>
+    </div>
+  </section>
+
+  <!-- GOALS -->
+  <section class="view" id="view-goals">
+    <div class="card">
+      <h2>Goals &amp; intentions</h2>
+      <p class="sub">Small, steady steps toward who you're becoming</p>
+      <div class="addrow">
+        <input type="text" id="goalInput" placeholder="What are you working toward?">
+        <button class="btn mini" id="addGoal">Add</button>
+      </div>
+      <div id="goalList" style="margin-top:14px;"></div>
+    </div>
+  </section>
+
+  <!-- WINS -->
+  <section class="view" id="view-wins">
+    <div class="card">
+      <h2>Wins &amp; milestones</h2>
+      <p class="sub">Evidence of how far you've come — keep them where you can see</p>
+      <div class="addrow">
+        <input type="text" id="winInput" placeholder="Something you're proud of">
+        <button class="btn mini" id="addWin">Add</button>
+      </div>
+      <div id="winList" style="margin-top:14px;"></div>
+    </div>
+  </section>
+
+  <!-- VIBES -->
+  <section class="view" id="view-vibes">
+    <div class="stats">
+      <div class="stat"><div class="n" id="stStreak">0</div><div class="t">day streak</div></div>
+      <div class="stat"><div class="n" id="stEntries">0</div><div class="t">check-ins</div></div>
+      <div class="stat"><div class="n" id="stWins">0</div><div class="t">wins</div></div>
+    </div>
+
+    <div class="card">
+      <h2>What we've noticed</h2>
+      <p class="sub">A look back at our recent weeks</p>
+      <div class="imsg" id="vibeSummary" style="font-family:'Baloo 2';font-size:16px;line-height:1.65;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Mood over time</h2>
+      <p class="sub">Your last check-ins, oldest to newest</p>
+      <div class="spark-wrap" id="sparkWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2>What you've been feeling</h2>
+      <p class="sub">Your mood mix recently</p>
+      <div id="moodBars"></div>
+    </div>
+
+    <div class="card">
+      <h2>Insights</h2>
+      <p class="sub">Quiet patterns worth noticing</p>
+      <div id="insights"></div>
+    </div>
+
+    <div class="card">
+      <h2>Goal progress</h2>
+      <div id="vibeGoals"></div>
+    </div>
+  </section>
+
+  <!-- MONTH -->
+  <section class="view" id="view-month">
+    <div class="card">
+      <div class="monthnav">
+        <button id="prevMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <span class="mtitle serif" id="monthTitle">—</span>
+        <button id="nextMonth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="mcal-head"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      <div class="mcal" id="monthCal"></div>
+      <div class="mlegend" id="monthLegend"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="moEntries">0</div><div class="t">check-ins</div></div>
+      <div class="stat"><div class="n" id="moDays">0</div><div class="t">days logged</div></div>
+      <div class="stat"><div class="n serif" id="moTop" style="font-size:17px">—</div><div class="t">most felt</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Our month, together</h2>
+      <p class="sub">The bigger picture of where we've been</p>
+      <div class="imsg" id="monthSummary" style="font-family:'Baloo 2';font-size:16px;line-height:1.65;"></div>
+    </div>
+
+    <div class="card">
+      <h2>This month's mood mix</h2>
+      <div id="monthBars"></div>
+    </div>
+  </section>
+</div>
+
+<nav>
+  <div class="navwrap">
+    <button class="nav-btn active" data-v="today">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3c1.5 2 1.5 4 0 6-1.5-2-1.5-4 0-6z"/><path d="M12 9c2-1.5 4-1 5 .5s.5 3.5-1.5 4.5"/><path d="M12 9c-2-1.5-4-1-5 .5s-.5 3.5 1.5 4.5"/><path d="M12 14v7"/></svg>
+      Today</button>
+    <button class="nav-btn" data-v="goals">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+      Goals</button>
+    <button class="nav-btn" data-v="wins">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 3l2.3 4.7 5.2.8-3.8 3.7.9 5.1L12 15l-4.6 2.4.9-5.1L4.5 8.5l5.2-.8z"/></svg>
+      Wins</button>
+    <button class="nav-btn" data-v="vibes">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 14l4-5 4 3 4-7 4 5"/><path d="M4 19h16"/></svg>
+      Vibes</button>
+    <button class="nav-btn" data-v="month">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>
+      Month</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== MOOD DEFINITIONS ===================== */
+/* faces drawn as SVG — no emoji anywhere */
+const MOODS=[
+  {key:'radiant', label:'Radiant', color:'#ff8fc7', score:5, mouth:'M15 28 Q24 38 33 28', eyes:'happy'},
+  {key:'happy',   label:'Happy',   color:'#ffc24b', score:4, mouth:'M16 29 Q24 35 32 29', eyes:'dot'},
+  {key:'calm',    label:'Calm',    color:'#8fe3c8', score:4, mouth:'M17 30 Q24 33 31 30', eyes:'soft'},
+  {key:'content', label:'Content', color:'#c9a7ff', score:4, mouth:'M17 30 Q24 32 31 30', eyes:'dot'},
+  {key:'okay',    label:'Okay',    color:'#b9c4f5', score:3, mouth:'M18 31 L30 31', eyes:'dot'},
+  {key:'tired',   label:'Tired',   color:'#a8d8ff', score:2, mouth:'M18 31 Q24 30 30 31', eyes:'line'},
+  {key:'anxious', label:'Anxious', color:'#ffb08f', score:2, mouth:'M17 31 Q20 34 24 31 Q28 28 31 31', eyes:'worried'},
+  {key:'sad',     label:'Sad',     color:'#9ab4ff', score:2, mouth:'M17 33 Q24 28 31 33', eyes:'soft'},
+  {key:'low',     label:'Low',     color:'#8f9bd6', score:1, mouth:'M16 34 Q24 27 32 34', eyes:'sad'},
+  {key:'tense',   label:'Tense',   color:'#ff8f8f', score:1, mouth:'M17 32 L31 32', eyes:'angry'},
+];
+const M=Object.fromEntries(MOODS.map(m=>[m.key,m]));
+
+function darken(hex,f=.45){
+  const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r*(1-f));g=Math.round(g*(1-f));b=Math.round(b*(1-f));
+  return `rgb(${r},${g},${b})`;
+}
+function faceSVG(m){
+  const stroke=darken(m.color,.5);
+  let eyes;
+  if(m.eyes==='line')      eyes=`<line x1="14" y1="21" x2="20" y2="21"/><line x1="28" y1="21" x2="34" y2="21"/>`;
+  else if(m.eyes==='soft') eyes=`<path d="M14 21 Q17 19 20 21"/><path d="M28 21 Q31 19 34 21"/>`;
+  else if(m.eyes==='happy')eyes=`<path d="M14 22 Q17 18 20 22"/><path d="M28 22 Q31 18 34 22"/>`;
+  else if(m.eyes==='sad')  eyes=`<circle cx="17" cy="22" r="2"/><circle cx="31" cy="22" r="2"/>`;
+  else                     eyes=`<circle cx="17" cy="21" r="2"/><circle cx="31" cy="21" r="2"/>`;
+  let brows='';
+  if(m.eyes==='worried')   brows=`<path d="M13 16 Q17 14 21 16"/><path d="M27 16 Q31 14 35 16"/>`;
+  if(m.eyes==='angry')     brows=`<path d="M13 15 L20 18"/><path d="M35 15 L28 18"/>`;
+  return `<svg viewBox="0 0 48 48" fill="none">
+    <circle cx="24" cy="24" r="21" fill="${m.color}"/>
+    <g stroke="${stroke}" stroke-width="2.2" stroke-linecap="round" fill="none">
+      ${brows}${eyes}<path d="${m.mouth}"/>
+    </g></svg>`;
+}
+const irisAvatarSVG=`<svg viewBox="0 0 40 40" fill="none">
+  <circle cx="20" cy="20" r="19" fill="#f3dde6"/>
+  <g stroke="#e85fb0" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M20 18c0-4-3-6.5-3-9.5 0-2 1.3-3.5 3-3.5s3 1.5 3 3.5c0 3-3 5.5-3 9.5z"/>
+    <path d="M20 18c2.8-2.8 6.5-3.5 8.5-2 1.7 1.2 1.8 3.2.6 4.6-1.6 2-5.6 1.2-9.1-2.6z"/>
+    <path d="M20 18c-2.8-2.8-6.5-3.5-8.5-2-1.7 1.2-1.8 3.2-.6 4.6 1.6 2 5.6 1.2 9.1-2.6z"/>
+  </g><circle cx="20" cy="18.5" r="2.2" fill="#ffc94d"/></svg>`;
+
+/* ===================== FACTORS ===================== */
+const FACTORS=['Work','Sleep','Friends','Family','Love','Health','Money','Self-care','Alone time','Weather'];
+
+/* ===================== STORAGE ===================== */
+const DB={load(k,d){try{return JSON.parse(localStorage.getItem('bloom_'+k))??d;}catch(e){return d;}},
+  save(k,v){localStorage.setItem('bloom_'+k,JSON.stringify(v));}};
+let entries=DB.load('entries',[]);   // {mood,intensity,factors[],note,grateful,ts}
+let goals=DB.load('goals',[]);
+let wins=DB.load('wins',[]);
+let sel={mood:null,factors:new Set()};
+
+/* ===================== HELPERS ===================== */
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const uid=()=>Date.now()+''+Math.floor(Math.random()*999);
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+const fmtDate=ts=>new Date(ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const fmtTime=ts=>new Date(ts).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);}
+function petals(){const cols=['#ff8fc7','#c9a7ff','#8fe3c8','#ffc94d','#a8d8ff'];
+  for(let i=0;i<18;i++){const p=document.createElement('div');p.className='petal';
+    p.style.left=Math.random()*100+'vw';const s=7+Math.random()*7;
+    p.innerHTML=`<svg width="${s+6}" height="${s+6}" viewBox="0 0 20 20"><path d="M10 2c3 3 3 6 0 9-3-3-3-6 0-9z" fill="${cols[i%cols.length]}"/></svg>`;
+    p.style.animation=`drift ${2+Math.random()*1.5}s ${Math.random()*.4}s ease-in forwards`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),3800);}}
+
+function calcStreak(){
+  if(!entries.length)return 0;
+  const days=new Set(entries.map(e=>dayKey(e.ts)));let s=0;const d=new Date();
+  for(;;){const k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    if(days.has(k)){s++;d.setDate(d.getDate()-1);}
+    else if(s===0&&k===dayKey(Date.now())){d.setDate(d.getDate()-1);}else break;}
+  return s;
+}
+function hourBand(){const h=new Date().getHours();
+  if(h<5)return'late';if(h<12)return'morning';if(h<17)return'afternoon';if(h<21)return'evening';return'night';}
+
+/* ===================== POLLY — OUR INNER VOICE (speaks as "we") ===================== */
+const KEYWORDS=[
+  {tags:['stress','overwhelm','deadline','busy','pressure','swamped','too much','workload'],
+   line:["A lot is landing on us at once, but we don't have to carry all of it in one breath.",
+         "The pressure is real — and the fact that we're naming it means we're already setting some of it down.",
+         "When everything feels urgent, even ten quiet minutes for us isn't a luxury. It's how we keep going."]},
+  {tags:['tired','exhausted','sleep','insomnia','drained','no energy','worn out'],
+   line:["Our body's asking for rest before anything else, and we're allowed to listen to it.",
+         "We're tired, and tiredness paints everything darker than it really is. Let's be gentle with how we read today.",
+         "Rest isn't us falling behind. Sometimes it's the bravest thing we do."]},
+  {tags:['lonely','alone','isolated','miss','no one','left out'],
+   line:["We feel alone right now, and that doesn't mean anything is wrong with us. Reaching toward one person could soften it.",
+         "Feeling unseen aches. But here we are, still showing up for ourselves — that counts.",
+         "We don't have to fix the whole loneliness tonight. One small thread of connection is enough."]},
+  {tags:['anxious','nervous','worry','scared','panic','dread','overthink'],
+   line:["Our mind is racing toward futures that haven't happened. What's actually true for us in this moment?",
+         "We're trying to keep ourselves safe, even when the worry overshoots. A slow breath tells us we're okay.",
+         "Worrying feels like doing something, but we're allowed to rest too. We're handling more than we give ourselves credit for."]},
+  {tags:['sad','down','empty','hurt','cry','grief','heartbroken','blue'],
+   line:["We're sad, and this feeling deserves room — not a rush to fix it. We're glad we put words to it.",
+         "It's okay that we're not okay today. Naming the hurt is its own quiet courage.",
+         "Heavy feelings move through us faster when we stop bracing. Let's just feel it gently."]},
+  {tags:['grateful','thankful','blessed','lucky','appreciate'],
+   line:["We held onto gratitude even today — that's a quiet strength of ours.",
+         "Noticing the good doesn't erase the hard for us. It just keeps our view in balance.",
+         "This thankfulness will still be here tomorrow, waiting for us as a softer place to land."]},
+  {tags:['proud','accomplished','finished','did it','achieved','nailed','won','progress'],
+   line:["We did this. Let's actually feel it instead of rushing past our own progress.",
+         "This is us showing up — let's remember it on the harder days.",
+         "We should mark this. Let's add it to our Wins so we don't forget how capable we are."]},
+  {tags:['sick','pain','headache','ill','unwell','ache'],
+   line:["We're unwell, and that takes more out of us than anyone admits. Let's lower the bar today.",
+         "While we're hurting, our only real job is to be kind to our body. Everything else can wait."]},
+  {tags:['angry','frustrated','annoyed','mad','unfair','furious'],
+   line:["We're angry, and anger usually points at something that matters to us. What's underneath it?",
+         "Our frustration is information, not a flaw. We can feel it fully without having to act on it."]},
+];
+
+function detectKeyword(text){
+  const t=(text||'').toLowerCase();
+  for(const k of KEYWORDS){ if(k.tags.some(w=>t.includes(w))) return pick(k.line); }
+  return null;
+}
+
+function generateFeedback(e){
+  const m=M[e.mood];
+  const band=hourBand();
+  const streak=calcStreak();
+  const prev=entries[1]; // entries[0] is the one we just added
+  const parts=[];
+
+  // 1) opening — our inner voice naming how we feel
+  const open={
+    high:["We feel light today, and it suits us so well.","There's real warmth in us right now — let's soak in it.",
+          "We're genuinely well today, and that's worth saying out loud."],
+    good:["We're in a steady, kind place, and those days matter more than we notice.",
+          "There's an ease in us today. Let's not rush past it.",
+          "We feel settled — calm suits us."],
+    mid:["We checked in honestly, even from somewhere in the middle. That counts.","A plain, ordinary day is still a day we showed up for.",
+         "Not every day has to sparkle for us, and that's perfectly okay."],
+    low:["We're being honest about how heavy this feels, and that takes something.","Today is asking a lot of us, and we can admit that.",
+         "We sat down and named a hard feeling. That's us taking care of ourselves."]
+  };
+  let bandKey = m.score>=5?'high':m.score>=4?'good':m.score>=3?'mid':'low';
+  if(e.intensity>=4 && m.score<=2) bandKey='low';
+  parts.push(pick(open[bandKey]));
+
+  // 2) reflection on what we wrote
+  const kw=detectKeyword((e.note||'')+' '+(e.grateful||''));
+  if(kw) parts.push(kw);
+  else if(e.note){
+    parts.push(pick(["Getting it out of our head and onto the page is how we make it lighter.",
+      "We trusted ourselves with that, and that matters.",
+      "Naming it like that is more powerful than it looks."]));
+  }
+
+  // 3) what's shaping us today
+  if(e.factors&&e.factors.length){
+    const f=e.factors[0].toLowerCase();
+    const fmap={
+      'work':"Work is weighing on us — let's see if one small boundary is possible.",
+      'sleep':"Sleep touches everything else for us. Protecting it tonight might be the kindest move.",
+      'friends':"Our people are part of this. Let's lean toward the ones who feel easy.",
+      'family':"Family stirs up our deepest feelings. Let's go gently with ourselves there.",
+      'love':"Matters of our heart deserve patience — with others, and with us.",
+      'health':"With our health in the picture, rest stops being optional.",
+      'money':"Money stress is exhausting and real for us. One small step still counts.",
+      'self-care':"Choosing self-care today is us taking our own side. That's something.",
+      'alone time':"This solitude is ours, and we chose it. Let's enjoy the quiet.",
+      'weather':"Even the sky shapes our mood. Let's notice it, then not let it have the final word."
+    };
+    if(fmap[f]) parts.push(fmap[f]);
+  }
+
+  // 4) trend awareness
+  if(prev){
+    if(m.score - M[prev.mood].score >= 2) parts.push("We've lifted since last time — let's hold onto whatever helped.");
+    else if(M[prev.mood].score - m.score >= 2) parts.push("This is a dip from last time, but dips pass. We've moved through them before.");
+  }
+
+  // 5) gratitude
+  if(e.grateful) parts.push(pick(["We found one good thing today, and that habit compounds for us.",
+    "Noticing that bright spot will matter more than we think.",
+    "Let's keep that small good moment close."]));
+
+  // 6) streak / closer
+  const closeBand={morning:"a gentle morning",afternoon:"the rest of our afternoon",evening:"a soft evening",night:"a restful night",late:"some real rest now"};
+  if(streak>=3) parts.push(`We've shown up ${streak} days running — that's us looking after ourselves.`);
+  parts.push(pick([`Let's give ourselves ${closeBand[band]}.`,`Let's be kind to ourselves through ${closeBand[band]}.`,`We'll be right here whenever we come back.`]));
+
+  // prompt — a question to ask ourselves
+  const prompts={
+    high:["What's one thing we'd want to remember about today?","Who could we share a little of this good energy with?"],
+    good:["What helped us feel settled today?","Is there a small ritual keeping us grounded lately?"],
+    mid:["What would make tomorrow 5% better for us?","What's one need of ours that's gone unspoken today?"],
+    low:["What's the smallest kind thing we could do for ourselves right now?","If our closest friend felt this way, what would we tell them?"]
+  };
+  return {msg:parts.join(' '), prompt:pick(prompts[bandKey])};
+}
+
+function showIris(fb,animate){
+  const card=$('#irisCard');card.classList.remove('empty-state');
+  $('#irisAvatar').innerHTML=irisAvatarSVG;
+  const msgEl=$('#irisMsg');msgEl.innerHTML=fb.msg;
+  const pEl=$('#irisPrompt');
+  if(fb.prompt){pEl.style.display='block';pEl.textContent='Something for us to sit with: '+fb.prompt;}
+  else pEl.style.display='none';
+  if(animate){msgEl.classList.remove('fade-in');void msgEl.offsetWidth;msgEl.classList.add('fade-in');}
+}
+function irisIdle(){
+  $('#irisAvatar').innerHTML=irisAvatarSVG;
+  const card=$('#irisCard');card.classList.add('empty-state');
+  $('#irisPrompt').style.display='none';
+  if(!entries.length){
+    $('#irisMsg').innerHTML="Hey, it's <b>Polly</b> — that's just us, talking to ourselves. Every time we log how we feel, I'll read it back and remind us what we already know deep down. There's no wrong way for us to feel. Let's start whenever we're ready.";
+  }else{
+    const last=entries[0];
+    showIris(generateFeedback(last),false);
+    const greetLine={morning:"Good morning, you.",afternoon:"Hey, it's us again.",evening:"Good evening, you.",night:"Winding down, are we?",late:"Still up, are we?"}[hourBand()];
+    $('#irisMsg').innerHTML = `<b>${greetLine}</b> Here's what we told ourselves after the last check-in — ready whenever we want to add another.`;
+    $('#irisPrompt').style.display='none';
+  }
+}
+
+/* ===================== RENDER: TODAY FORM ===================== */
+function renderMoodGrid(){
+  $('#moodGrid').innerHTML=MOODS.map(m=>
+    `<div class="mood" data-k="${m.key}">${faceSVG(m)}<div class="lbl">${m.label}</div></div>`).join('');
+  $$('#moodGrid .mood').forEach(el=>el.onclick=()=>{
+    $$('#moodGrid .mood').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');sel.mood=el.dataset.k;$('#intField').style.display='block';});
+}
+function renderFactors(){
+  $('#factorChips').innerHTML=FACTORS.map(f=>`<div class="chip" data-f="${f}"><span class="dot"></span>${f}</div>`).join('');
+  $$('#factorChips .chip').forEach(c=>c.onclick=()=>{
+    const f=c.dataset.f;
+    if(sel.factors.has(f)){sel.factors.delete(f);c.classList.remove('sel');}
+    else{sel.factors.add(f);c.classList.add('sel');}});
+}
+
+$('#save').onclick=()=>{
+  if(!sel.mood){toast('Pick how you feel first');return;}
+  const e={mood:sel.mood,intensity:+$('#intensity').value,factors:[...sel.factors],
+    note:$('#note').value.trim(),grateful:$('#grateful').value.trim(),ts:Date.now()};
+  entries.unshift(e);DB.save('entries',entries);
+  const fb=generateFeedback(e);
+  // reset form
+  $('#note').value='';$('#grateful').value='';$('#intensity').value=3;
+  sel.mood=null;sel.factors=new Set();
+  $$('#moodGrid .mood').forEach(x=>x.classList.remove('sel'));
+  $$('#factorChips .chip').forEach(x=>x.classList.remove('sel'));
+  $('#intField').style.display='none';
+  petals();
+  showIris(fb,true);
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderWeek();renderRecent();renderVibes();renderSuggestions();renderMonth();
+};
+
+/* ===================== RENDER: WEEK ===================== */
+function renderWeek(){
+  const wrap=$('#week');wrap.innerHTML='';
+  const L=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const de=entries.filter(e=>dayKey(e.ts)===k);
+    let inner='',cls='dot empty';
+    if(de.length){const m=M[de[0].mood];inner=faceSVG(m);cls='dot';}
+    wrap.innerHTML+=`<div class="wd"><div class="dl">${L[d.getDay()]}</div><div class="${cls}">${inner}</div></div>`;
+  }
+}
+
+/* ===================== RENDER: RECENT ===================== */
+function renderRecent(){
+  const list=$('#recent');const r=entries.slice(0,6);
+  if(!r.length){list.innerHTML=emptyBox('No entries yet. Your first reflection is waiting above.');return;}
+  list.innerHTML=r.map(e=>{const m=M[e.mood];
+    const tags=(e.factors||[]).map(f=>`<span class="minitag">${esc(f)}</span>`).join('');
+    return `<div class="item"><div class="ic">${faceSVG(m)}</div><div class="body">
+      <div class="it-title">${m.label}${e.intensity?` · ${'·'.repeat(0)}intensity ${e.intensity}/5`:''}</div>
+      ${e.note?`<div class="it-note">${esc(e.note)}</div>`:''}
+      ${e.grateful?`<div class="it-note" style="color:var(--plum)">Grateful for: ${esc(e.grateful)}</div>`:''}
+      ${tags?`<div class="tagline">${tags}</div>`:''}
+      <div class="it-meta">${fmtDate(e.ts)} · ${fmtTime(e.ts)}</div></div>
+      <div class="x" data-de="${e.ts}">${xIcon()}</div></div>`;}).join('');
+  list.querySelectorAll('[data-de]').forEach(b=>b.onclick=()=>{
+    entries=entries.filter(e=>e.ts!=b.dataset.de);DB.save('entries',entries);
+    renderWeek();renderRecent();renderVibes();renderSuggestions();renderMonth();irisIdle();});
+}
+function xIcon(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;}
+function emptyBox(t){return `<div class="empty"><svg viewBox="0 0 40 40" fill="none" stroke="#e85fb0" stroke-width="1.6"><path d="M20 24c0-5-4-8-4-12 0-2.5 1.7-4 4-4s4 1.5 4 4c0 4-4 7-4 12z"/><path d="M20 24v10"/></svg><div>${t}</div></div>`;}
+
+/* ===================== SUGGESTIONS & FLAGS ===================== */
+function generateSuggestions(){
+  const flags=[],todos=[];
+  const recent=entries.slice(0,14);
+  const loggedToday=entries.some(e=>dayKey(e.ts)===dayKey(Date.now()));
+
+  // --- flags (things to gently notice) ---
+  let lowRun=0;for(const e of entries){if(M[e.mood].score<=2)lowRun++;else break;}
+  if(lowRun>=3) flags.push("We've felt low "+lowRun+" times in a row. If this heaviness lingers, leaning on someone we trust — or a professional — is a strong, kind thing for us to do.");
+  if(entries[0]&&M[entries[0].mood].score<=2&&entries[0].intensity>=4)
+    flags.push("Our last entry was an intense, hard feeling. Let's lower the bar today — we don't owe anyone a productive day.");
+  if(recent.length>=4){
+    const a=recent.slice(0,2).reduce((s,e)=>s+M[e.mood].score,0)/2;
+    const b=recent.slice(2,4).reduce((s,e)=>s+M[e.mood].score,0)/2;
+    if(b-a>=1.5) flags.push("Our mood's been sliding down these last few check-ins. Let's pause and ask ourselves what's changed.");
+  }
+  // recurring factor on tough days
+  const tough=recent.filter(e=>M[e.mood].score<=2);
+  const fc={};tough.forEach(e=>(e.factors||[]).forEach(f=>fc[f]=(fc[f]||0)+1));
+  const topF=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0];
+  if(topF&&topF[1]>=3) flags.push(`"${topF[0]}" keeps showing up on our harder days. Maybe that's the thread we need to tug on.`);
+
+  // --- todos (gentle next steps for us) ---
+  if(!loggedToday) todos.push("Check in with how we're feeling today.");
+  if(goals.some(g=>!g.done)) todos.push("Nudge one of our goals forward by a single step.");
+  else if(!goals.length) todos.push("Set one small intention for ourselves on the Goals page.");
+  const lastWin=wins[0];
+  if(!wins.length||(lastWin&&Date.now()-lastWin.ts>5*864e5)) todos.push("Add a recent win — even a tiny one counts for us.");
+  if(lowRun>=2) todos.push("Do one genuinely kind thing for ourselves: rest, fresh air, or a message to a friend.");
+  const grRecent=recent.filter(e=>e.grateful).length;
+  if(recent.length>=3&&grRecent===0) todos.push("Let's try naming one good thing in our next entry.");
+  if(!todos.length) todos.push("Let's keep doing what we're doing — it's working.");
+
+  return {flags,todos};
+}
+let doneTodos=new Set();
+function renderSuggestions(){
+  const {flags,todos}=generateSuggestions();
+  const fEl=$('#flags');
+  if(!entries.length){fEl.innerHTML='';}
+  else if(!flags.length){
+    fEl.innerHTML=`<div class="flag calm"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="#5c8068" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4 10-11"/></svg></span><span class="ft">Nothing's weighing on us right now — we're in a steady place. Let's keep tending to ourselves.</span></div>`;
+  }else{
+    fEl.innerHTML=flags.map(f=>`<div class="flag"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="#c98079" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg></span><span class="ft">${f}</span></div>`).join('');
+  }
+  const tEl=$('#todos');
+  tEl.innerHTML=todos.map((t,i)=>`<div class="todo ${doneTodos.has(t)?'checked':''}" data-t="${esc(t)}">
+    <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4 10-11"/></svg></span>
+    <span class="tt">${t}</span></div>`).join('');
+  tEl.querySelectorAll('.todo').forEach(el=>el.onclick=()=>{
+    const t=el.getAttribute('data-t');
+    if(doneTodos.has(t)){doneTodos.delete(t);el.classList.remove('checked');}
+    else{doneTodos.add(t);el.classList.add('checked');}
+  });
+}
+
+/* ===================== MONTH VIEW ===================== */
+let monthCursor=new Date();
+function monthEntries(y,mo){return entries.filter(e=>{const d=new Date(e.ts);return d.getFullYear()===y&&d.getMonth()===mo;});}
+function renderMonth(){
+  const y=monthCursor.getFullYear(),mo=monthCursor.getMonth();
+  $('#monthTitle').textContent=monthCursor.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const me=monthEntries(y,mo);
+  // first entry per day
+  const byDay={};me.forEach(e=>{const dnum=new Date(e.ts).getDate();if(!byDay[dnum])byDay[dnum]=e;});
+  const firstDow=new Date(y,mo,1).getDay();
+  const numDays=new Date(y,mo+1,0).getDate();
+  const todayN=(new Date().getFullYear()===y&&new Date().getMonth()===mo)?new Date().getDate():-1;
+  let html='';
+  for(let i=0;i<firstDow;i++) html+='<div class="mc blank"></div>';
+  for(let d=1;d<=numDays;d++){
+    const e=byDay[d];
+    if(e){const m=M[e.mood];
+      html+=`<div class="mc has ${d===todayN?'today':''}" style="background:${m.color}"><span class="num">${d}</span>${faceSVG(m)}</div>`;
+    }else{
+      html+=`<div class="mc ${d===todayN?'today':''}"><span class="num">${d}</span></div>`;
+    }
+  }
+  $('#monthCal').innerHTML=html;
+
+  // legend (moods present this month)
+  const present=[...new Set(me.map(e=>e.mood))];
+  $('#monthLegend').innerHTML=present.map(k=>{const m=M[k];
+    return `<div class="lg"><span class="sw" style="background:${m.color}"></span>${m.label}</div>`;}).join('');
+
+  // stats
+  const daysLogged=Object.keys(byDay).length;
+  $('#moEntries').textContent=me.length;
+  $('#moDays').textContent=daysLogged;
+  const counts={};me.forEach(e=>counts[e.mood]=(counts[e.mood]||0)+1);
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  $('#moTop').textContent=top?M[top[0]].label:'—';
+
+  // summary
+  $('#monthSummary').innerHTML=monthSummary(me,monthCursor);
+
+  // bars
+  const total=me.length;const mb=$('#monthBars');
+  if(!total){mb.innerHTML=emptyBox('No check-ins this month yet.');}
+  else{mb.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,c])=>{
+    const m=M[k];const pct=Math.round(c/total*100);
+    return `<div class="bar-row"><div class="bf">${faceSVG(m)}</div><div class="bar-lbl">${m.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+      <div class="bar-pct">${pct}%</div></div>`;}).join('');}
+}
+function monthSummary(me,cur){
+  const name=cur.toLocaleDateString(undefined,{month:'long'});
+  if(!me.length) return `Nothing logged for ${name} yet. As we check in through the month, I'll gather our bigger picture here — our highs, our harder days, and what tends to move us.`;
+  const avg=me.reduce((s,e)=>s+M[e.mood].score,0)/me.length;
+  const counts={};me.forEach(e=>counts[e.mood]=(counts[e.mood]||0)+1);
+  const top=M[Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]];
+  const days=new Set(me.map(e=>new Date(e.ts).getDate())).size;
+  // best & hardest day
+  const byDay={};me.forEach(e=>{const d=new Date(e.ts).getDate();(byDay[d]=byDay[d]||[]).push(M[e.mood].score);});
+  let best=null,bestV=-1,hard=null,hardV=99;
+  Object.entries(byDay).forEach(([d,a])=>{const v=a.reduce((x,y)=>x+y,0)/a.length;if(v>bestV){bestV=v;best=d;}if(v<hardV){hardV=v;hard=d;}});
+  let read = avg>=4.2?"a notably bright month":avg>=3.4?"a mostly steady month":avg>=2.6?"a month of real ups and downs":"a tender, heavier month";
+  let s=`So far, ${name} has been <b>${read}</b> for us. We checked in across <b>${days} day${days>1?'s':''}</b>, and <b>${top.label.toLowerCase()}</b> was our most frequent feeling. `;
+  if(best&&hard&&best!==hard) s+=`Our lightest day was the <b>${ordinal(+best)}</b>, and the <b>${ordinal(+hard)}</b> asked the most of us. `;
+  const wmonth=wins.filter(w=>{const d=new Date(w.ts);return d.getFullYear()===cur.getFullYear()&&d.getMonth()===cur.getMonth();}).length;
+  if(wmonth) s+=`We also marked <b>${wmonth} win${wmonth>1?'s':''}</b> this month. `;
+  s+= avg>=3.4?"Whatever we're doing, some of it is clearly working — let's protect those things.":"Let's be proud we kept showing up. Months like this pass, and we're not moving through it alone.";
+  return s;
+}
+function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+$('#prevMonth').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()-1);renderMonth();};
+$('#nextMonth').onclick=()=>{monthCursor.setMonth(monthCursor.getMonth()+1);renderMonth();};
+
+/* ===================== GOALS ===================== */
+$('#addGoal').onclick=addGoal;
+$('#goalInput').addEventListener('keydown',e=>{if(e.key==='Enter')addGoal();});
+function addGoal(){const t=$('#goalInput').value.trim();if(!t)return;
+  goals.unshift({id:uid(),text:t,prog:0,done:false});DB.save('goals',goals);
+  $('#goalInput').value='';toast('Intention set');renderGoals();renderVibes();}
+function renderGoals(){
+  const list=$('#goalList');
+  if(!goals.length){list.innerHTML=emptyBox('No goals yet. What do you want to grow toward?');return;}
+  list.innerHTML=goals.map(g=>`<div class="item ${g.done?'done':''}"><div class="ic">${goalIcon(g.done)}</div>
+    <div class="body"><div class="it-title">${esc(g.text)}</div>
+    <div class="gprog"><div class="gtrack"><div class="gfill" style="width:${g.prog}%"></div></div>
+    <span class="it-meta" style="margin-top:0">${g.prog}%</span>
+    <div class="gbtns"><div class="step" data-m="${g.id}">−</div><div class="step" data-p="${g.id}">+</div></div></div></div>
+    <div class="x" data-dg="${g.id}">${xIcon()}</div></div>`).join('');
+  list.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>bump(b.dataset.p,10));
+  list.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>bump(b.dataset.m,-10));
+  list.querySelectorAll('[data-dg]').forEach(b=>b.onclick=()=>{goals=goals.filter(g=>g.id!=b.dataset.dg);DB.save('goals',goals);renderGoals();renderVibes();});
+}
+function goalIcon(done){return done
+  ?`<svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="13" fill="#6fd6b0"/><path d="M9 15l4 4 8-8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  :`<svg viewBox="0 0 30 30" fill="none" stroke="#e85fb0" stroke-width="2"><circle cx="15" cy="20" r="5"/><path d="M15 15c2-2 4-1.5 5-.5"/></svg>`;}
+function bump(id,a){const g=goals.find(x=>x.id==id);if(!g)return;
+  g.prog=Math.max(0,Math.min(100,g.prog+a));const was=g.done;g.done=g.prog>=100;
+  DB.save('goals',goals);if(g.done&&!was){petals();toast('Goal complete — beautifully done');}
+  renderGoals();renderVibes();}
+
+/* ===================== WINS ===================== */
+$('#addWin').onclick=addWin;
+$('#winInput').addEventListener('keydown',e=>{if(e.key==='Enter')addWin();});
+function addWin(){const t=$('#winInput').value.trim();if(!t)return;
+  wins.unshift({id:uid(),text:t,ts:Date.now()});DB.save('wins',wins);
+  $('#winInput').value='';petals();toast('Logged — that one counts');renderWins();renderVibes();}
+function renderWins(){
+  const list=$('#winList');
+  if(!wins.length){list.innerHTML=emptyBox('No wins logged yet. Even the small ones belong here.');return;}
+  list.innerHTML=wins.map(w=>`<div class="item"><div class="ic">${starIcon()}</div>
+    <div class="body"><div class="it-title">${esc(w.text)}</div><div class="it-meta">${fmtDate(w.ts)}</div></div>
+    <div class="x" data-dw="${w.id}">${xIcon()}</div></div>`).join('');
+  list.querySelectorAll('[data-dw]').forEach(b=>b.onclick=()=>{wins=wins.filter(w=>w.id!=b.dataset.dw);DB.save('wins',wins);renderWins();renderVibes();});
+}
+function starIcon(){return `<svg viewBox="0 0 30 30" fill="none"><path d="M15 4l3 6.2 6.8 1-5 4.8 1.2 6.8L15 19.6 9 22.6l1.2-6.8-5-4.8 6.8-1z" fill="#ffc94d"/></svg>`;}
+
+/* ===================== VIBES ===================== */
+function renderVibes(){
+  $('#stStreak').textContent=calcStreak();
+  $('#stEntries').textContent=entries.length;
+  $('#stWins').textContent=wins.length;
+
+  const recent=entries.slice(0,30);
+
+  // summary
+  $('#vibeSummary').innerHTML=vibeSummary(recent);
+
+  // sparkline (chronological)
+  renderSpark(recent.slice().reverse());
+
+  // mood bars
+  const counts={};recent.forEach(e=>counts[e.mood]=(counts[e.mood]||0)+1);
+  const total=recent.length;const bars=$('#moodBars');
+  if(!total){bars.innerHTML=emptyBox('Log a few moods to see your mix.');}
+  else{bars.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,c])=>{
+    const m=M[k];const pct=Math.round(c/total*100);
+    return `<div class="bar-row"><div class="bf">${faceSVG(m)}</div><div class="bar-lbl">${m.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+      <div class="bar-pct">${pct}%</div></div>`;}).join('');}
+
+  // insights
+  $('#insights').innerHTML=buildInsights(recent);
+
+  // goals
+  const vg=$('#vibeGoals');
+  if(!goals.length){vg.innerHTML=emptyBox('No goals yet.');}
+  else{vg.innerHTML=goals.slice(0,5).map(g=>`<div class="bar-row"><div class="bar-lbl">${esc(g.text)}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${g.prog}%;background:linear-gradient(90deg,var(--blush),var(--plum))"></div></div>
+    <div class="bar-pct">${g.prog}%</div></div>`).join('');}
+}
+
+function vibeSummary(recent){
+  if(!recent.length) return "Once we've logged a few check-ins, I'll reflect our patterns back to us here — what we tend to feel, when, and what seems to lift us.";
+  const counts={};recent.forEach(e=>counts[e.mood]=(counts[e.mood]||0)+1);
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];const tm=M[top];
+  const avg=recent.reduce((s,e)=>s+M[e.mood].score,0)/recent.length;
+  const n=recent.length;const streak=calcStreak();
+  let read;
+  if(avg>=4.2) read="we've been in a genuinely bright stretch";
+  else if(avg>=3.4) read="we've been mostly steady and well";
+  else if(avg>=2.6) read="we've been riding real ups and downs";
+  else read="we've been carrying a heavier season";
+  let s=`Across our last ${n} check-in${n>1?'s':''}, ${read}. The feeling that came up most for us was <b>${tm.label.toLowerCase()}</b>. `;
+  if(streak>=3) s+=`We've shown up ${streak} days in a row — that steadiness is its own kind of self-care. `;
+  if(wins.length) s+=`We've also marked <b>${wins.length} win${wins.length>1?'s':''}</b>; let's not lose sight of them. `;
+  s+= avg>=3.4 ? "Let's keep noticing what's working — we clearly have some of it figured out."
+              : "Let's be patient with ourselves. Showing up here, like we are, is already movement.";
+  return s;
+}
+
+function renderSpark(chron){
+  const wrap=$('#sparkWrap');
+  if(chron.length<2){wrap.innerHTML=emptyBox('Two or more check-ins will draw your trend.');return;}
+  const W=480,H=90,pad=10;const pts=chron.map(e=>M[e.mood].score);
+  const max=5,min=1;const stepX=(W-pad*2)/(pts.length-1);
+  const xy=pts.map((v,i)=>[pad+i*stepX, H-pad-((v-min)/(max-min))*(H-pad*2)]);
+  const line=xy.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L${xy[xy.length-1][0].toFixed(1)} ${H-pad} L${xy[0][0].toFixed(1)} ${H-pad} Z`;
+  const dots=chron.map((e,i)=>`<circle cx="${xy[i][0].toFixed(1)}" cy="${xy[i][1].toFixed(1)}" r="3.5" fill="${M[e.mood].color}" stroke="#fff" stroke-width="1.5"/>`).join('');
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8fc7" stop-opacity=".35"/><stop offset="1" stop-color="#ff8fc7" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#sg)"/>
+    <path d="${line}" fill="none" stroke="#e85fb0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}</svg>`;
+}
+
+function buildInsights(recent){
+  if(recent.length<3) return emptyBox('A few more entries and patterns will start to show.');
+  const out=[];
+  // best day of week
+  const byDow={};recent.forEach(e=>{const d=new Date(e.ts).getDay();(byDow[d]=byDow[d]||[]).push(M[e.mood].score);});
+  let bestDow=null,bestAvg=-1;Object.entries(byDow).forEach(([d,a])=>{const av=a.reduce((x,y)=>x+y,0)/a.length;if(av>bestAvg){bestAvg=av;bestDow=+d;}});
+  const dayNames=['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'];
+  if(bestDow!=null) out.push(`<b>${dayNames[bestDow]}</b> tend to be our brightest days.`);
+  // factor on tough days
+  const tough=recent.filter(e=>M[e.mood].score<=2);
+  const fcount={};tough.forEach(e=>(e.factors||[]).forEach(f=>fcount[f]=(fcount[f]||0)+1));
+  const topF=Object.entries(fcount).sort((a,b)=>b[1]-a[1])[0];
+  if(topF&&topF[1]>=2) out.push(`<b>${topF[0]}</b> shows up most often on our harder days — worth keeping an eye on.`);
+  // good factor
+  const good=recent.filter(e=>M[e.mood].score>=4);
+  const gcount={};good.forEach(e=>(e.factors||[]).forEach(f=>gcount[f]=(gcount[f]||0)+1));
+  const topG=Object.entries(gcount).sort((a,b)=>b[1]-a[1])[0];
+  if(topG&&topG[1]>=2) out.push(`When <b>${topG[0]}</b> is in the picture, we tend to feel better.`);
+  // gratitude habit
+  const gr=recent.filter(e=>e.grateful).length;
+  if(gr>=3) out.push(`We've noted something to be grateful for <b>${gr} times</b> recently — that habit is doing quiet work for us.`);
+  // consistency
+  const streak=calcStreak();
+  if(streak>=5) out.push(`A <b>${streak}-day streak</b> of checking in. Reflection is becoming part of our rhythm.`);
+  if(!out.length) out.push(`We're building the data — let's keep logging and clearer patterns will surface here.`);
+  return out.map(t=>`<div class="insight"><span class="idot"></span><span class="itxt">${t}</span></div>`).join('');
+}
+
+/* ===================== NAV ===================== */
+$$('.nav-btn').forEach(b=>b.onclick=()=>{
+  $$('.nav-btn').forEach(x=>x.classList.remove('active'));
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  b.classList.add('active');$('#view-'+b.dataset.v).classList.add('active');
+  if(b.dataset.v==='vibes')renderVibes();
+  if(b.dataset.v==='month'){monthCursor=new Date();renderMonth();}
+  window.scrollTo({top:0,behavior:'smooth'});});
+
+/* ===================== INIT ===================== */
+(function init(){
+  const g={morning:'Good morning',afternoon:'Good afternoon',evening:'Good evening',night:'Good evening',late:'Late night'}[hourBand()];
+  $('#greet').textContent=`${g} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})}`;
+  renderMoodGrid();renderFactors();renderWeek();renderRecent();
+  renderGoals();renderWins();renderVibes();renderSuggestions();renderMonth();irisIdle();
+})();
+</script>
+</body>
+</html>
